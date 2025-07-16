@@ -6,7 +6,7 @@ lists = {}
 
 @app.route("/whatsapp", methods=['POST'])
 def whatsapp():
-    incoming_msg = request.values.get('Body', '').strip()
+    incoming_msg = request.values.get('Body', '').strip().replace('\u200f', '')
     from_number = request.values.get('From')
 
     if from_number not in lists:
@@ -15,17 +15,17 @@ def whatsapp():
     resp = MessagingResponse()
     msg = resp.message()
 
-    if incoming_msg.startswith("רשימה חדשה"):
+    if "רשימה חדשה" in incoming_msg:
         lists[from_number] = []
         msg.body("✅ רשימה חדשה נוצרה.")
-    elif incoming_msg.startswith("הוסף"):
+    elif "הוסף" in incoming_msg:
         item = incoming_msg.replace("הוסף", "").strip()
         if item:
             lists[from_number].append(item)
             msg.body(f"📌 '{item}' נוסף לרשימה.")
         else:
             msg.body("🔺 לא ציינת פריט להוסיף.")
-    elif incoming_msg == "הצג רשימה":
+    elif "הצג רשימה" in incoming_msg:
         if lists[from_number]:
             list_text = "\n".join(f"{i+1}. {item}" for i, item in enumerate(lists[from_number]))
             msg.body("📝 הרשימה שלך:\n" + list_text)
